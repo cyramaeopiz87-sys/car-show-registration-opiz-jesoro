@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react'
 import { getRegistrations, getSummary } from '../api/sample-data'
 
@@ -30,7 +29,20 @@ function RegistrationsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem('autovista-theme') || 'light'
+  )
+
   const pageSize = 10
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('autovista-theme', theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((current) => current === 'light' ? 'dark' : 'light')
+  }
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -90,37 +102,26 @@ function RegistrationsPage() {
           title: 'Total Registrations',
           value: summary.totalRegistrations,
           icon: 'bi-car-front',
-          color: 'primary',
-        },
-        {
-          title: 'Total Fees',
-          value: formatCurrency(summary.totalFees),
-          icon: 'bi-receipt',
-          color: 'info',
-        },
-        {
-          title: 'Total Payments',
-          value: formatCurrency(summary.totalPayments),
-          icon: 'bi-cash-stack',
-          color: 'success',
-        },
-        {
-          title: 'Uncollected Payments',
-          value: formatCurrency(summary.uncollectedPayments),
-          icon: 'bi-wallet2',
-          color: 'warning',
         },
         {
           title: 'Confirmed',
           value: summary.confirmed,
           icon: 'bi-person-check',
-          color: 'danger',
         },
         {
           title: 'Checked In',
           value: summary.checkedIn,
           icon: 'bi-clipboard-check',
-          color: 'primary',
+        },
+        {
+          title: 'Total Fees',
+          value: formatCurrency(summary.totalFees),
+          icon: 'bi-receipt',
+        },
+        {
+          title: 'Uncollected Payments',
+          value: formatCurrency(summary.uncollectedPayments),
+          icon: 'bi-wallet2',
         },
       ]
     : []
@@ -154,13 +155,12 @@ function RegistrationsPage() {
           </div>
         </div>
 
-        <div className="sidebar-label">MAIN MENU</div>
-
         <nav className="sidebar-nav">
           <a href="#dashboard" className="nav-link active">
             <i className="bi bi-grid"></i>
             Dashboard
           </a>
+
           <a href="#registrations" className="nav-link">
             <i className="bi bi-car-front"></i>
             Registrations
@@ -169,49 +169,68 @@ function RegistrationsPage() {
       </aside>
 
       <main className="main-content" id="dashboard">
-        <header className="topbar">
-          <div>
-            <h6>AutoVista Events</h6>
-            <small>Car Show Registration System</small>
-          </div>
+        
+        {/* FIRST SCREEN CONTAINER (Saktong 100vh para sa Hero at Summary Cards) */}
+        <div className="first-screen-container">
+          {/* HERO SECTION */}
+          <section className="hero-section">
+            <img
+              className="hero-car-photo"
+              src="/autovista-car-hero.jpg"
+              alt="Blue sports car"
+            />
 
-          <div className="admin-profile">
-            <div className="admin-avatar">A</div>
-            <div>
-              <strong>Administrator</strong>
+            <div className="hero-overlay"></div>
+
+            <div className="hero-content">
+              <span className="event-tag">2027 CAR SHOW</span>
+              <h1>AutoVista Events</h1>
+              <p>Manage and monitor car show participants.</p>
             </div>
-          </div>
-        </header>
 
-        <section className="page-heading">
-          <div>
-            <span className="event-tag">2027 CAR SHOW</span>
-            <h1>Dashboard Overview</h1>
-          </div>
+            <div className="hero-actions">
+              <button
+                type="button"
+                className="theme-toggle"
+                onClick={toggleTheme}
+                aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                <i className={`bi ${theme === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill'}`}></i>
+                <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+              </button>
 
-          <button className="btn btn-dark" type="button">
-            <i className="bi bi-download me-2"></i>
-            Export Report
-          </button>
-        </section>
-
-        <section className="stats-grid">
-          {stats.map((stat) => (
-            <div className="stat-card" key={stat.title}>
-              <div className={`stat-icon ${stat.color}`}>
-                <i className={`bi ${stat.icon}`}></i>
-              </div>
-              <div>
-                <p>{stat.title}</p>
-                <h3>{stat.value}</h3>
+              <div className="admin-profile">
+                <div className="admin-avatar">A</div>
+                <div>
+                  <strong>Admin</strong>
+                  <small>Administrator</small>
+                </div>
               </div>
             </div>
-          ))}
-        </section>
+          </section>
 
+          {/* KPI CARDS */}
+          <section className="stats-grid">
+            {stats.map((stat) => (
+              <div className="stat-card" key={stat.title}>
+                <div className="stat-icon">
+                  <i className={`bi ${stat.icon}`}></i>
+                </div>
+                <div>
+                  <p>{stat.title}</p>
+                  <h3>{stat.value}</h3>
+                </div>
+              </div>
+            ))}
+          </section>
+        </div>
+
+        {/* REGISTRATIONS (Nasa ibaba at makikita lang kapag nag-scroll) */}
         <section className="registration-section" id="registrations">
           <div className="section-header">
             <div>
+              <span className="section-eyebrow">EVENT MANAGEMENT</span>
               <h2>Recent Registrations</h2>
               <p>Manage and monitor car show participants.</p>
             </div>
@@ -289,7 +308,10 @@ function RegistrationsPage() {
                 {loading ? (
                   <tr>
                     <td colSpan="9" className="text-center py-5">
-                      <div className="spinner-border spinner-border-sm me-2" role="status"></div>
+                      <div
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      ></div>
                       Loading registrations...
                     </td>
                   </tr>
@@ -344,9 +366,7 @@ function RegistrationsPage() {
                         </span>
                       </td>
                       <td>
-                        <strong>
-                          {formatCurrency(registration.registrationFee)}
-                        </strong>
+                        <strong>{formatCurrency(registration.registrationFee)}</strong>
                       </td>
                     </tr>
                   ))
@@ -358,8 +378,7 @@ function RegistrationsPage() {
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
             <small className="text-muted">
               Showing {totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
-              {' '}to{' '}
-              {Math.min(currentPage * pageSize, totalCount)}
+              {' '}to {Math.min(currentPage * pageSize, totalCount)}
               {' '}of {totalCount} registrations
             </small>
 

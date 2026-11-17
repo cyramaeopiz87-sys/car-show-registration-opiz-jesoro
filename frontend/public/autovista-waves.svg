@@ -1,0 +1,56 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="blue1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#a9c7fa" stop-opacity=".72"/>
+      <stop offset="100%" stop-color="#dce8ff" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="blue2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#729ee8" stop-opacity=".48"/>
+      <stop offset="100%" stop-color="#b9d0fa" stop-opacity=".08"/>
+    </linearGradient>
+    <linearGradient id="blue3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d7e5ff" stop-opacity=".1"/>
+      <stop offset="50%" stop-color="#8db2f0" stop-opacity=".48"/>
+      <stop offset="100%" stop-color="#d5e3ff" stop-opacity=".12"/>
+    </linearGradient>
+    <linearGradient id="blue4" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c5d9fc" stop-opacity=".65"/>
+      <stop offset="100%" stop-color="#e8f0ff" stop-opacity=".04"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="1000" fill="#f2f5ff"/>
+
+  <!-- Upper-right flowing waves -->
+  <path d="M700 0 C930 120 1050 20 1240 80 C1430 140 1490 280 1600 300 L1600 0 Z"
+        fill="url(#blue1)"/>
+  <path d="M880 0 C1080 150 1170 90 1330 170 C1460 235 1510 340 1600 375 L1600 115 C1460 80 1350 15 1200 0 Z"
+        fill="url(#blue2)"/>
+  <path d="M1030 0 C1190 100 1300 100 1410 200 C1490 270 1540 350 1600 390"
+        fill="none" stroke="#8db1ed" stroke-opacity=".42" stroke-width="3"/>
+  <path d="M770 0 C1000 190 1120 160 1280 240 C1420 310 1500 420 1600 445"
+        fill="none" stroke="#c0d5fb" stroke-opacity=".8" stroke-width="2"/>
+
+  <!-- Middle soft flowing layer -->
+  <path d="M0 650 C250 540 410 620 610 570 C820 515 930 370 1130 400 C1320 425 1450 570 1600 520 L1600 1000 L0 1000 Z"
+        fill="url(#blue4)"/>
+  <path d="M0 730 C250 620 410 690 630 635 C850 580 970 470 1160 495 C1340 520 1460 650 1600 615"
+        fill="none" stroke="#a8c4f2" stroke-opacity=".38" stroke-width="3"/>
+
+  <!-- Lower-left sweeping waves -->
+  <path d="M0 780 C180 700 290 750 430 830 C560 905 700 930 850 1000 L0 1000 Z"
+        fill="url(#blue1)"/>
+  <path d="M0 850 C180 770 310 820 440 890 C560 955 650 975 740 1000 L0 1000 Z"
+        fill="url(#blue2)"/>
+  <path d="M0 910 C160 835 280 865 420 930 C510 975 570 990 640 1000"
+        fill="none" stroke="#8eafe9" stroke-opacity=".5" stroke-width="3"/>
+  <path d="M0 950 C150 885 270 900 390 955 C450 985 500 995 550 1000"
+        fill="none" stroke="#c2d6fa" stroke-opacity=".8" stroke-width="2"/>
+
+  <!-- Fine flowing accents -->
+  <path d="M900 0 C1080 130 1190 120 1350 205 C1480 275 1540 355 1600 400"
+        fill="none" stroke="#ffffff" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M0 690 C230 590 370 650 560 600 C760 550 900 425 1080 435"
+        fill="none" stroke="#ffffff" stroke-opacity=".45" stroke-width="2"/>
+</svg>
