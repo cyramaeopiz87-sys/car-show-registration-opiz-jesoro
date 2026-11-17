@@ -19,6 +19,19 @@ logs/
 .vscode/
 .idea/
 .vs/
+**/.vs/
+*.user
+
+# .NET build artifacts
+bin/
+**/bin/
+obj/
+**/obj/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
 
 # Operating system files
 .DS_Store
