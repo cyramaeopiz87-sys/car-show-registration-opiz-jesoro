@@ -135,6 +135,14 @@ function RegistrationsPage() {
     setCurrentPage(1)
   }
 
+  const handleClearFilters = () => {
+    setSearch('')
+    setDebouncedSearch('')
+    setSelectedType('All Types')
+    setSelectedStatus('All Statuses')
+    setCurrentPage(1)
+  }
+
   return (
     <div className="dashboard-wrapper">
       <aside className="sidebar">
@@ -249,6 +257,16 @@ function RegistrationsPage() {
               <option>Checked In</option>
               <option>Cancelled</option>
             </select>
+
+            <button
+              type="button"
+              className="btn btn-outline-secondary clear-filters-btn"
+              onClick={handleClearFilters}
+              title="Clear all filters"
+            >
+              <i className="bi bi-arrow-counterclockwise me-2"></i>
+              Clear Filters
+            </button>
           </div>
 
           <div className="table-responsive">
@@ -296,23 +314,18 @@ function RegistrationsPage() {
                   registrations.map((registration) => (
                     <tr key={registration.id}>
                       <td>{registration.registrationNumber}</td>
-
                       <td>{formatDate(registration.registrationDate)}</td>
-
                       <td>
                         <strong>{registration.participantName}</strong>
                         <br />
                         <small>{registration.contactNumber}</small>
                       </td>
-
                       <td>
                         <strong>{registration.carMakeModel}</strong>
                         <br />
                         <small>{registration.plateNumber}</small>
                       </td>
-
                       <td>{registration.registrationType}</td>
-
                       <td>
                         <span
                           className={`status-badge ${registration.status.toLowerCase().replace(' ', '-')}`}
@@ -320,11 +333,9 @@ function RegistrationsPage() {
                           {registration.status}
                         </span>
                       </td>
-
                       <td>
                         <strong>{formatCurrency(registration.amountPaid)}</strong>
                       </td>
-
                       <td>
                         <span
                           className={`status-badge ${registration.paymentStatus.toLowerCase()}`}
@@ -332,7 +343,6 @@ function RegistrationsPage() {
                           {registration.paymentStatus}
                         </span>
                       </td>
-
                       <td>
                         <strong>
                           {formatCurrency(registration.registrationFee)}
