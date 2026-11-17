@@ -25,50 +25,67 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Address")
                         .IsRequired()
+                        .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("AmountPaid")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CarMakeModel")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ContactNumber")
                         .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ParticipantName")
                         .IsRequired()
+                        .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PlateNumber")
                         .IsRequired()
+                        .HasMaxLength(15)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("RegistrationFee")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("RegistrationNumber")
                         .IsRequired()
+                        .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("RegistrationType")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("RegistrationType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Registrations");
+                    b.HasIndex("PlateNumber")
+                        .IsUnique();
+
+                    b.HasIndex("RegistrationNumber")
+                        .IsUnique();
+
+                    b.ToTable("Registrations", (string)null);
                 });
 #pragma warning restore 612, 618
         }
