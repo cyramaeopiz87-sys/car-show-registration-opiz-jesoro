@@ -65,11 +65,12 @@ builder.Services.AddOpenApi(options =>
 
 var app = builder.Build();
 
-// Apply EF Core Migrations
+// Apply EF Core Migrations and Seed data
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.Migrate();
+    DatabaseSeeder.Seed(dbContext);
 }
 
 // Enable CORS
