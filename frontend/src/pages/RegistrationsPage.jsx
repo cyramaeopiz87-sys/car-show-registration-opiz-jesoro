@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getRegistrations, getSummary } from '../api/sample-data'
-
+import {
+  getRegistrations,
+  getSummary,
+  createRegistration,
+} from '../api/sample-data'
 const formatCurrency = (amount = 0) =>
   new Intl.NumberFormat('en-PH', {
     style: 'currency',
@@ -21,6 +24,7 @@ function RegistrationsPage() {
   const [selectedType, setSelectedType] = useState('All Types')
   const [selectedStatus, setSelectedStatus] = useState('All Statuses')
   const [currentPage, setCurrentPage] = useState(1)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const [registrations, setRegistrations] = useState([])
   const [summary, setSummary] = useState(null)
@@ -28,7 +32,20 @@ function RegistrationsPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formError, setFormError] = useState('')
 
+  const [formData, setFormData] = useState({
+    participantName: '',
+    contactNumber: '',
+    email: '',
+    address: '',
+    carMakeModel: '',
+    plateNumber: '',
+    registrationType: 'Exhibitor',
+    amountPaid: "",
+  })
   const [theme, setTheme] = useState(
     () => localStorage.getItem('autovista-theme') || 'light'
   )
@@ -94,7 +111,7 @@ function RegistrationsPage() {
     return () => {
       isActive = false
     }
-  }, [debouncedSearch, selectedType, selectedStatus, currentPage])
+  }, [debouncedSearch, selectedType, selectedStatus, currentPage, refreshKey])
 
   const stats = summary
     ? [
@@ -129,6 +146,15 @@ function RegistrationsPage() {
   const handleTypeChange = (event) => {
     setSelectedType(event.target.value)
     setCurrentPage(1)
+    
+  }
+    const handleFormChange = (event) => {
+    const { name, value } = event.target
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: name === 'amountPaid' ? Number(value) : value,
+    }))
   }
 
   const handleStatusChange = (event) => {
@@ -142,11 +168,184 @@ function RegistrationsPage() {
     setSelectedType('All Types')
     setSelectedStatus('All Statuses')
     setCurrentPage(1)
+    
   }
+  const handleRegistrationSubmit = async (event) => {
+    event.preventDefault()
 
-  return (
-    <div className="dashboard-wrapper">
-      <aside className="sidebar">
+    try {
+      setSubmitting(true)
+      setFormError('')
+
+      await createRegistration(formData)
+
+      setShowRegistrationForm(false)
+
+      setFormData({
+        participantName: '',
+        contactNumber: '',
+        email: '',
+        address: '',
+        carMakeModel: '',
+        plateNumber: '',
+        registrationType: 'Exhibitor',
+        amountPaid: 1,
+      })
+
+      setSearch('')
+      setDebouncedSearch('')
+      setSelectedType('All Types')
+      setSelectedStatus('All Statuses')
+      setCurrentPage(1)
+      setRefreshKey((current) => current + 1)
+    } catch (err) {
+      setFormError(err.message || 'Failed to create registration.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+return (
+  <div className="dashboard-wrapper">
+    {showRegistrationForm && (
+      <div className="registration-modal-backdrop">
+        <div className="registration-modal">
+      <h2>New Registration</h2>
+<p>Register a participant for the 2027 Car Show.</p>
+
+<form onSubmit={handleRegistrationSubmit}>
+  <div className="mb-3">
+    <label className="form-label">Participant Name</label>
+    <input
+      type="text"
+      className="form-control"
+      name="participantName"
+      value={formData.participantName}
+      onChange={handleFormChange}
+      required
+    />
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">Contact Number</label>
+    <input
+      type="tel"
+      className="form-control"
+      name="contactNumber"
+      value={formData.contactNumber}
+      onChange={handleFormChange}
+      pattern="09[0-9]{9}"
+      maxLength="11"
+      placeholder="09XXXXXXXXX"
+      required
+    />
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">Email</label>
+    <input
+      type="email"
+      className="form-control"
+      name="email"
+      value={formData.email}
+      onChange={handleFormChange}
+      required
+    />
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">Plate Number</label>
+    <input
+      type="text"
+      className="form-control"
+      name="plateNumber"
+      value={formData.plateNumber}
+      onChange={handleFormChange}
+      required
+    />
+  </div>
+    <div className="mb-3">
+    <label className="form-label">Address</label>
+    <textarea
+      className="form-control"
+      name="address"
+      value={formData.address}
+      onChange={handleFormChange}
+      required
+    />
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">Car Make and Model</label>
+    <input
+      type="text"
+      className="form-control"
+      name="carMakeModel"
+      value={formData.carMakeModel}
+      onChange={handleFormChange}
+      required
+    />
+  </div>
+    <div className="mb-3">
+    <label className="form-label">Registration Type</label>
+    <select
+      className="form-select"
+      name="registrationType"
+      value={formData.registrationType}
+      onChange={handleFormChange}
+      required
+    >
+      <option value="Exhibitor">Exhibitor</option>
+      <option value="Competitor">Competitor</option>
+      <option value="VIP">VIP</option>
+    </select>
+  </div>
+
+  <div className="mb-3">
+    <label className="form-label">Amount Paid (₱)</label>
+    <input
+      type="number"
+      className="form-control"
+      name="amountPaid"
+      value={formData.amountPaid}
+      onChange={handleFormChange}
+      min="0"
+      step="1"
+      required
+    />
+  </div>
+
+  {formError && (
+    <div className="alert alert-danger" role="alert">
+      {formError}
+    </div>
+  )}
+
+  <div className="d-flex justify-content-end gap-2 mt-4">
+    <button
+      type="button"
+      className="btn btn-outline-secondary"
+      onClick={() => {
+        setShowRegistrationForm(false)
+        setFormError('')
+      }}
+    >
+      Cancel
+    </button>
+
+    <button
+      type="submit"
+      className="btn btn-primary"
+      disabled={submitting}
+    >
+      {submitting ? 'Saving...' : 'Save Registration'}
+    </button>
+  </div>
+  </form>
+        </div>
+      </div>
+    )}
+
+    <aside className="sidebar">
         <div className="brand">
           <div className="brand-icon">AV</div>
           <div>
@@ -226,7 +425,7 @@ function RegistrationsPage() {
           </section>
         </div>
 
-        {/* REGISTRATIONS (Nasa ibaba at makikita lang kapag nag-scroll) */}
+        
         <section className="registration-section" id="registrations">
           <div className="section-header">
             <div>
@@ -235,10 +434,18 @@ function RegistrationsPage() {
               <p>Manage and monitor car show participants.</p>
             </div>
 
-            <button className="btn btn-primary" type="button">
-              <i className="bi bi-plus-lg me-2"></i>
-              Add Registration
-            </button>
+           
+<button
+  className="btn btn-primary"
+  type="button"
+  onClick={() => {
+    setFormError('')
+    setShowRegistrationForm(true)
+  }}
+>
+  <i className="bi bi-plus-lg me-2"></i>
+  Add Registration
+</button>
           </div>
 
           <div className="filter-bar">

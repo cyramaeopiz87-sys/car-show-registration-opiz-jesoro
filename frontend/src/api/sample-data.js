@@ -26,7 +26,27 @@ export async function getRegistrations({
 
   return response.json()
 }
+export async function createRegistration(registrationData) {
+  const response = await fetch(`${API_BASE_URL}/registrations`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(registrationData),
+  })
 
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null)
+
+    throw new Error(
+      errorData?.detail ||
+      errorData?.title ||
+      'Failed to create registration.',
+    )
+  }
+
+  return response.json()
+}
 export async function getSummary() {
   const response = await fetch(
     `${API_BASE_URL}/registrations/summary`,
