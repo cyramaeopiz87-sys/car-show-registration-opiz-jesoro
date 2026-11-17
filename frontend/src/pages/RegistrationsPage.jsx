@@ -9,6 +9,13 @@ const formatCurrency = (amount = 0) =>
     maximumFractionDigits: 0,
   }).format(amount)
 
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString('en-PH', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+
 function RegistrationsPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -249,33 +256,35 @@ function RegistrationsPage() {
               <thead>
                 <tr>
                   <th>REGISTRATION</th>
+                  <th>DATE</th>
                   <th>PARTICIPANT / CONTACT</th>
                   <th>CAR / PLATE</th>
                   <th>TYPE</th>
                   <th>STATUS</th>
+                  <th>AMOUNT PAID</th>
                   <th>PAYMENT</th>
-                  <th>FEE</th>
+                  <th>REGISTRATION FEE</th>
                 </tr>
               </thead>
 
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5">
+                    <td colSpan="9" className="text-center py-5">
                       <div className="spinner-border spinner-border-sm me-2" role="status"></div>
                       Loading registrations...
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5 text-danger">
+                    <td colSpan="9" className="text-center py-5 text-danger">
                       <i className="bi bi-exclamation-circle fs-3 d-block mb-2"></i>
                       {error}
                     </td>
                   </tr>
                 ) : registrations.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-5">
+                    <td colSpan="9" className="text-center py-5">
                       <i className="bi bi-search fs-3 d-block mb-2"></i>
                       <strong>No registrations found</strong>
                       <p className="mb-0">
@@ -287,17 +296,23 @@ function RegistrationsPage() {
                   registrations.map((registration) => (
                     <tr key={registration.id}>
                       <td>{registration.registrationNumber}</td>
+
+                      <td>{formatDate(registration.registrationDate)}</td>
+
                       <td>
                         <strong>{registration.participantName}</strong>
                         <br />
                         <small>{registration.contactNumber}</small>
                       </td>
+
                       <td>
                         <strong>{registration.carMakeModel}</strong>
                         <br />
                         <small>{registration.plateNumber}</small>
                       </td>
+
                       <td>{registration.registrationType}</td>
+
                       <td>
                         <span
                           className={`status-badge ${registration.status.toLowerCase().replace(' ', '-')}`}
@@ -305,6 +320,11 @@ function RegistrationsPage() {
                           {registration.status}
                         </span>
                       </td>
+
+                      <td>
+                        <strong>{formatCurrency(registration.amountPaid)}</strong>
+                      </td>
+
                       <td>
                         <span
                           className={`status-badge ${registration.paymentStatus.toLowerCase()}`}
@@ -312,6 +332,7 @@ function RegistrationsPage() {
                           {registration.paymentStatus}
                         </span>
                       </td>
+
                       <td>
                         <strong>
                           {formatCurrency(registration.registrationFee)}
