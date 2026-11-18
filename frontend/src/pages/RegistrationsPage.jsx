@@ -35,6 +35,7 @@ function RegistrationsPage() {
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   const [formData, setFormData] = useState({
     participantName: '',
@@ -77,24 +78,52 @@ function RegistrationsPage() {
       try {
         setLoading(true)
         setError('')
+const [firstPageData, summaryData] = await Promise.all([
+  getRegistrations({
+    participantName: debouncedSearch,
+    type: selectedType,
+    status: selectedStatus,
+    page: 1,
+    pageSize,
+  }),
+  getSummary(),
+])
 
-        const [registrationData, summaryData] = await Promise.all([
-          getRegistrations({
-            participantName: debouncedSearch,
-            type: selectedType,
-            status: selectedStatus,
-            page: currentPage,
-            pageSize,
-          }),
-          getSummary(),
-        ])
+const remainingPages = await Promise.all(
+  Array.from(
+    { length: Math.max(0, firstPageData.totalPages - 1) },
+    (_, index) =>
+      getRegistrations({
+        participantName: debouncedSearch,
+        type: selectedType,
+        status: selectedStatus,
+        page: index + 2,
+        pageSize,
+      }),
+  ),
+)
 
-        if (!isActive) return
+if (!isActive) return
 
-        setRegistrations(registrationData.items)
-        setTotalCount(registrationData.totalCount)
-        setTotalPages(registrationData.totalPages)
-        setSummary(summaryData)
+const allRegistrations = [
+  ...firstPageData.items,
+  ...remainingPages.flatMap((page) => page.items),
+].sort((a, b) =>
+  b.registrationNumber.localeCompare(
+    a.registrationNumber,
+    undefined,
+    { numeric: true },
+  ),
+)
+
+const startIndex = (currentPage - 1) * pageSize
+
+setRegistrations(
+  allRegistrations.slice(startIndex, startIndex + pageSize),
+)
+setTotalCount(firstPageData.totalCount)
+setTotalPages(firstPageData.totalPages)
+setSummary(summaryData)
       } catch (err) {
         if (isActive) {
           setError(err.message || 'Unable to load dashboard data.')
@@ -149,14 +178,15 @@ function RegistrationsPage() {
     
   }
     const handleFormChange = (event) => {
-    const { name, value } = event.target
+  const { name, value } = event.target
 
-    setFormData((previous) => ({
-      ...previous,
-      [name]: name === 'amountPaid' ? Number(value) : value,
-    }))
-  }
-
+  setFormData((previous) => ({
+    ...previous,
+    [name]: name === 'amountPaid'
+      ? value === '' ? '' : Number(value)
+      : value,
+  }))
+}
   const handleStatusChange = (event) => {
     setSelectedStatus(event.target.value)
     setCurrentPage(1)
@@ -172,13 +202,14 @@ function RegistrationsPage() {
   }
   const handleRegistrationSubmit = async (event) => {
     event.preventDefault()
-
+  if (submitting) return
     try {
       setSubmitting(true)
       setFormError('')
 
-      await createRegistration(formData)
-
+      const result = await createRegistration(formData)
+    console.log('Registration API response:', result)
+      setSuccessMessage('Registration successfully saved!')
       setShowRegistrationForm(false)
 
       setFormData({
@@ -189,7 +220,7 @@ function RegistrationsPage() {
         carMakeModel: '',
         plateNumber: '',
         registrationType: 'Exhibitor',
-        amountPaid: 1,
+        amountPaid: '',
       })
 
       setSearch('')
@@ -368,8 +399,20 @@ return (
       </aside>
 
       <main className="main-content" id="dashboard">
+        {successMessage && (
+  <div className="alert alert-success alert-dismissible fade show" role="alert">
+    <i className="bi bi-check-circle-fill me-2"></i>
+    {successMessage}
+    <button
+      type="button"
+      className="btn-close"
+      aria-label="Close"
+      onClick={() => setSuccessMessage('')}
+    ></button>
+  </div>
+)}
         
-        {/* FIRST SCREEN CONTAINER (Saktong 100vh para sa Hero at Summary Cards) */}
+       
         <div className="first-screen-container">
           {/* HERO SECTION */}
           <section className="hero-section">

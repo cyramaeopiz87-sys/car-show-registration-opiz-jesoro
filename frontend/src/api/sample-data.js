@@ -35,17 +35,23 @@ export async function createRegistration(registrationData) {
     body: JSON.stringify(registrationData),
   })
 
+  const responseData = await response.json().catch(() => null)
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => null)
+    const validationMessages = responseData?.errors
+      ? Object.values(responseData.errors).flat()
+      : []
 
     throw new Error(
-      errorData?.detail ||
-      errorData?.title ||
-      'Failed to create registration.',
+      validationMessages[0] ||
+      responseData?.detail ||
+      responseData?.title ||
+      responseData?.message ||
+           'Failed to create registration.',
     )
   }
 
-  return response.json()
+  return responseData
 }
 export async function getSummary() {
   const response = await fetch(
