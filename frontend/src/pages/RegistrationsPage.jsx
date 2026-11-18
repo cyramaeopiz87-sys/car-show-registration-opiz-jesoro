@@ -51,7 +51,7 @@ function RegistrationsPage() {
     () => localStorage.getItem('autovista-theme') || 'light'
   )
 
-  const pageSize = 10
+  const [pageSize, setPageSize] = useState(10)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -73,75 +73,44 @@ function RegistrationsPage() {
 
   useEffect(() => {
     let isActive = true
+async function loadDashboard() {
+  try {
+    setLoading(true)
+    setError('')
 
-    async function loadDashboard() {
-      try {
-        setLoading(true)
-        setError('')
-const [firstPageData, summaryData] = await Promise.all([
-  getRegistrations({
-    participantName: debouncedSearch,
-    type: selectedType,
-    status: selectedStatus,
-    page: 1,
-    pageSize,
-  }),
-  getSummary(),
-])
-
-const remainingPages = await Promise.all(
-  Array.from(
-    { length: Math.max(0, firstPageData.totalPages - 1) },
-    (_, index) =>
+    const [registrationData, summaryData] = await Promise.all([
       getRegistrations({
         participantName: debouncedSearch,
         type: selectedType,
         status: selectedStatus,
-        page: index + 2,
+        page: currentPage,
         pageSize,
       }),
-  ),
-)
+      getSummary(),
+    ])
 
-if (!isActive) return
+    if (!isActive) return
 
-const allRegistrations = [
-  ...firstPageData.items,
-  ...remainingPages.flatMap((page) => page.items),
-].sort((a, b) =>
-  b.registrationNumber.localeCompare(
-    a.registrationNumber,
-    undefined,
-    { numeric: true },
-  ),
-)
-
-const startIndex = (currentPage - 1) * pageSize
-
-setRegistrations(
-  allRegistrations.slice(startIndex, startIndex + pageSize),
-)
-setTotalCount(firstPageData.totalCount)
-setTotalPages(firstPageData.totalPages)
-setSummary(summaryData)
-      } catch (err) {
-        if (isActive) {
-          setError(err.message || 'Unable to load dashboard data.')
-        }
-      } finally {
-        if (isActive) {
-          setLoading(false)
-        }
-      }
+    setRegistrations(registrationData.items)
+    setTotalCount(registrationData.totalCount)
+    setTotalPages(registrationData.totalPages)
+    setSummary(summaryData)
+  } catch (err) {
+    if (isActive) {
+      setError(err.message || 'Unable to load dashboard data.')
     }
-
+  } finally {
+    if (isActive) {
+      setLoading(false)
+    }
+  }
+}
     loadDashboard()
 
     return () => {
       isActive = false
     }
-  }, [debouncedSearch, selectedType, selectedStatus, currentPage, refreshKey])
-
+  }, [debouncedSearch, selectedType, selectedStatus, currentPage, pageSize, refreshKey])
   const stats = summary
     ? [
         {
@@ -160,9 +129,9 @@ setSummary(summaryData)
           icon: 'bi-clipboard-check',
         },
         {
-          title: 'Total Fees',
-          value: formatCurrency(summary.totalFees),
-          icon: 'bi-receipt',
+          title: 'Total Payments',
+          value: formatCurrency(summary.totalPayments),
+          icon: 'bi-cash-stack',
         },
         {
           title: 'Uncollected Payments',
@@ -565,14 +534,23 @@ return (
                       Loading registrations...
                     </td>
                   </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="9" className="text-center py-5 text-danger">
-                      <i className="bi bi-exclamation-circle fs-3 d-block mb-2"></i>
-                      {error}
-                    </td>
-                  </tr>
-                ) : registrations.length === 0 ? (
+               ) : error ? (
+  <tr>
+    <td colSpan="9" className="text-center py-5 text-danger">
+      <i className="bi bi-exclamation-circle fs-3 d-block mb-2"></i>
+      <p>{error}</p>
+
+      <button
+        type="button"
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => setRefreshKey((current) => current + 1)}
+      >
+        <i className="bi bi-arrow-clockwise me-2"></i>
+        Try Again
+      </button>
+    </td>
+  </tr>
+) : registrations.length === 0 ? (
                   <tr>
                     <td colSpan="9" className="text-center py-5">
                       <i className="bi bi-search fs-3 d-block mb-2"></i>
@@ -624,40 +602,76 @@ return (
               </tbody>
             </table>
           </div>
+<div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
+  <div className="d-flex align-items-center gap-3 flex-wrap">
+    <small className="text-muted">
+      Showing {totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
+      {' '}to {Math.min(currentPage * pageSize, totalCount)}
+      {' '}of {totalCount} registrations
+    </small>
 
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3">
-            <small className="text-muted">
-              Showing {totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}
-              {' '}to {Math.min(currentPage * pageSize, totalCount)}
-              {' '}of {totalCount} registrations
-            </small>
+    <div className="d-flex align-items-center gap-2">
+      <label htmlFor="pageSize" className="small">
+        Show:
+      </label>
 
-            <div className="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                disabled={currentPage === 1 || loading}
-                onClick={() => setCurrentPage((page) => page - 1)}
-              >
-                <i className="bi bi-chevron-left me-1"></i>
-                Previous
-              </button>
+      <select
+        id="pageSize"
+        className="form-select form-select-sm"
+        style={{ width: '75px' }}
+        value={pageSize}
+        onChange={(event) => {
+          setPageSize(Number(event.target.value))
+          setCurrentPage(1)
+        }}
+      >
+        <option value={5}>5</option>
+        <option value={10}>10</option>
+        <option value={20}>20</option>
+      </select>
+    </div>
+  </div>
 
-              <span className="small">
-                Page {totalPages === 0 ? 0 : currentPage} of {totalPages}
-              </span>
+  <div className="d-flex align-items-center gap-2">
+    <button
+      type="button"
+      className="btn btn-outline-secondary btn-sm"
+      disabled={currentPage === 1 || loading}
+      onClick={() => setCurrentPage((page) => page - 1)}
+    >
+      <i className="bi bi-chevron-left me-1"></i>
+      Previous
+    </button>
 
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                disabled={currentPage >= totalPages || loading}
-                onClick={() => setCurrentPage((page) => page + 1)}
-              >
-                Next
-                <i className="bi bi-chevron-right ms-1"></i>
-              </button>
-            </div>
-          </div>
+<div className="d-flex align-items-center gap-1">
+  {Array.from({ length: totalPages }, (_, index) => (
+    <button
+      key={index + 1}
+      type="button"
+      className={`btn btn-sm ${
+        currentPage === index + 1
+          ? 'btn-primary'
+          : 'btn-outline-secondary'
+      }`}
+      disabled={loading}
+      onClick={() => setCurrentPage(index + 1)}
+    >
+      {index + 1}
+    </button>
+  ))}
+</div>
+
+    <button
+      type="button"
+      className="btn btn-outline-secondary btn-sm"
+      disabled={currentPage >= totalPages || loading}
+      onClick={() => setCurrentPage((page) => page + 1)}
+    >
+      Next
+      <i className="bi bi-chevron-right ms-1"></i>
+    </button>
+  </div>
+</div>
         </section>
       </main>
     </div>
