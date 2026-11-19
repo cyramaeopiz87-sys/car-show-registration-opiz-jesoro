@@ -534,7 +534,7 @@ return (
                       Loading registrations...
                     </td>
                   </tr>
-               ) : error ? (
+                ) : error ? (
   <tr>
     <td colSpan="9" className="text-center py-5 text-danger">
       <i className="bi bi-exclamation-circle fs-3 d-block mb-2"></i>
@@ -550,17 +550,7 @@ return (
       </button>
     </td>
   </tr>
-) : registrations.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="text-center py-5">
-                      <i className="bi bi-search fs-3 d-block mb-2"></i>
-                      <strong>No registrations found</strong>
-                      <p className="mb-0">
-                        Try changing your search or filter selections.
-                      </p>
-                    </td>
-                  </tr>
-                ) : (
+) : (
                   registrations.map((registration) => (
                     <tr key={registration.id}>
                       <td>{registration.registrationNumber}</td>
@@ -643,7 +633,7 @@ return (
       Previous
     </button>
 
-<div className="d-flex align-items-center gap-1">
+   <div className="d-flex align-items-center gap-1">
   {Array.from({ length: totalPages }, (_, index) => (
     <button
       key={index + 1}
